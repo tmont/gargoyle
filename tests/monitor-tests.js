@@ -176,4 +176,95 @@ describe('Monitoring', function() {
 			});
 		});
 	});
+
+	it('should emit "rename" and "create" for renamed files', function(done) {
+		var file = path.join(root, 'foo/bar/baz/foo.txt');
+		var newFile = path.join(path.dirname(file), 'bar.txt');
+		fs.createFile(file, function(err) {
+			should.not.exist(err);
+			vigilia.monitor(root, function(err, context) {
+				should.not.exist(err);
+				watcher = context;
+				var renamed = false, created = false;
+				watcher.monitor.on('rename', function(filename) {
+					filename.should.equal(file);
+					renamed = true;
+					if (created) {
+						done();
+					}
+				});
+				watcher.monitor.on('create', function(filename) {
+					filename.should.equal(newFile);
+					created = true;
+					if (renamed) {
+						done();
+					}
+				});
+
+				fs.rename(file, newFile, function(err) {
+					should.not.exist(err);
+				});
+			});
+		});
+	});
+
+	describe('on a single file', function() {
+		it('should detect rename', function(done) {
+			var file = path.join(root, 'foo.txt');
+			var newFile = path.join(path.dirname(file), 'bar.txt');
+			fs.createFile(file, function(err) {
+				should.not.exist(err);
+				vigilia.monitor(file, function(err, context) {
+					should.not.exist(err);
+					watcher = context;
+					watcher.monitor.on('rename', function(filename) {
+						filename.should.equal(file);
+						done();
+					});
+
+					fs.rename(file, newFile, function(err) {
+						should.not.exist(err);
+					});
+				});
+			});
+		});
+
+		it('should detect modification', function(done) {
+			var file = path.join(root, 'foo.txt');
+			fs.createFile(file, function(err) {
+				should.not.exist(err);
+				vigilia.monitor(file, function(err, context) {
+					should.not.exist(err);
+					watcher = context;
+					watcher.monitor.on('update', function(filename) {
+						filename.should.equal(file);
+						done();
+					});
+
+					fs.appendFile(file, 'bar', function(err) {
+						should.not.exist(err);
+					});
+				});
+			});
+		});
+
+		it('should detect deletion', function(done) {
+			var file = path.join(root, 'foo.txt');
+			fs.createFile(file, function(err) {
+				should.not.exist(err);
+				vigilia.monitor(file, function(err, context) {
+					should.not.exist(err);
+					watcher = context;
+					watcher.monitor.on('delete', function(filename) {
+						filename.should.equal(file);
+						done();
+					});
+
+					fs.unlink(file, function(err) {
+						should.not.exist(err);
+					});
+				});
+			});
+		});
+	});
 });

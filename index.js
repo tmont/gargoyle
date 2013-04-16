@@ -3,6 +3,31 @@ var fs = require('fs'),
 	path = require('path'),
 	EventEmitter = require('events').EventEmitter;
 
+function getRealEvent(event, filePath, context, callback) {
+	fs.exists(filePath, function(exists) {
+		var eventName;
+		//console.log(event + ' ' + exists + ' ' + filePath);
+		//when a file is unlink()'d, watch() sends a change event
+		//and two renames, so we need to make sure we aren't
+		//emitting a bunch of delete events to the client
+		if (!context.files[filePath]) {
+			if (exists && event === 'rename') {
+				eventName = 'create';
+			}
+		} else {
+			eventName = exists
+				? (event === 'rename' ? 'rename' : 'update')
+				: (event === 'change' ? 'delete' : 'rename');
+			if (eventName === 'delete') {
+				context.files[filePath].close();
+				delete context.files[filePath];
+			}
+		}
+
+		callback(eventName);
+	});
+}
+
 function watch(filePath, context, callback) {
 	fs.stat(filePath, function(err, stat) {
 		if (err) {
@@ -13,8 +38,13 @@ function watch(filePath, context, callback) {
 		if (stat.isDirectory()) {
 			context.files[filePath] = fs.watch(filePath, function(event, newFile) {
 				newFile = path.join(filePath, newFile);
-				fs.exists(newFile, function(exists) {
-					context.monitor.emit(exists ? 'create' : 'delete', newFile);
+				getRealEvent(event, newFile, context, function(eventName) {
+					if (eventName !== 'create') {
+						return;
+					}
+
+					context.monitor.emit(eventName, newFile);
+//					watch(newFile, context, function() {});
 				});
 			});
 
@@ -36,36 +66,39 @@ function watch(filePath, context, callback) {
 						return;
 					}
 
-					callback && callback(null, context);
+					callback && callback();
 				});
 			});
 			return;
 		}
 
 		context.files[filePath] = fs.watch(filePath, function(event) {
-			context.monitor.emit(event === 'rename' ? 'rename' : 'update', filePath);
+			getRealEvent(event, filePath, context, function(eventName) {
+				context.monitor.emit(eventName, filePath);
+			});
 		});
+
 		callback();
 	});
 }
 
-exports.monitor = function(dir, context, callback) {
-	if (typeof(context) === 'function') {
-		callback = context;
-		context = {};
-	}
-	if (!context) {
-		context = {};
-	}
+exports.monitor = function(dir, callback) {
+	var context = {
+		monitor: new EventEmitter(),
+		files: {},
+		stop: function(callback) {
+			exports.stop(this, callback);
+		}
+	};
 
-	if (!context.files) {
-		context.files = {};
-	}
-	if (!context.monitor) {
-		context.monitor = new EventEmitter();
-	}
+	watch(dir, context, function(err) {
+		if (err) {
+			callback && callback(err);
+			return;
+		}
 
-	watch(dir, context, callback);
+		callback && callback(null, context);
+	});
 };
 
 exports.stop = function(context, callback) {
