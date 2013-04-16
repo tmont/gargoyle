@@ -98,4 +98,42 @@ describe('Monitoring', function() {
 			});
 		});
 	});
+
+	it('should detect deleted file in root directory', function(done) {
+		var file = path.join(root, 'foo.txt');
+		fs.createFile(file, function(err) {
+			should.not.exist(err);
+			vigilia.monitor(root, function(err, context) {
+				should.not.exist(err);
+				watcher = context;
+				watcher.monitor.on('delete', function(filename) {
+					filename.should.equal(file);
+					done();
+				});
+
+				fs.unlink(file, function(err) {
+					should.not.exist(err);
+				});
+			});
+		});
+	});
+
+	it('should detect deleted file in subdirectory', function(done) {
+		var file = path.join(root, 'foo/bar/baz/foo.txt');
+		fs.createFile(file, function(err) {
+			should.not.exist(err);
+			vigilia.monitor(root, function(err, context) {
+				should.not.exist(err);
+				watcher = context;
+				watcher.monitor.on('delete', function(filename) {
+					filename.should.equal(file);
+					done();
+				});
+
+				fs.unlink(file, function(err) {
+					should.not.exist(err);
+				});
+			});
+		});
+	});
 });
