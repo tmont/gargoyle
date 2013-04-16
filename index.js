@@ -13,7 +13,6 @@ function watch(filePath, context, callback) {
 		if (stat.isDirectory()) {
 			context.files[filePath] = fs.watch(filePath, function(event, newFile) {
 				newFile = path.join(filePath, newFile);
-				//console.log('\n' + event + ' ' + newFile);
 				fs.exists(newFile, function(exists) {
 					context.monitor.emit(exists ? 'create' : 'delete', newFile);
 				});
@@ -44,7 +43,6 @@ function watch(filePath, context, callback) {
 		}
 
 		context.files[filePath] = fs.watch(filePath, function(event) {
-			//console.log('\n' + event + ' ' + filePath);
 			context.monitor.emit('update', filePath);
 		});
 		callback();
