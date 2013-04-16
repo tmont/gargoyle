@@ -136,4 +136,44 @@ describe('Monitoring', function() {
 			});
 		});
 	});
+
+	it('should detect renamed file in root directory', function(done) {
+		var file = path.join(root, 'foo.txt');
+		fs.createFile(file, function(err) {
+			should.not.exist(err);
+			vigilia.monitor(root, function(err, context) {
+				should.not.exist(err);
+				watcher = context;
+				watcher.monitor.on('rename', function(filename) {
+					filename.should.equal(file);
+					done();
+				});
+
+				var newFile = path.join(path.dirname(file), 'bar.txt');
+				fs.rename(file, newFile, function(err) {
+					should.not.exist(err);
+				});
+			});
+		});
+	});
+
+	it('should detect renamed file in subdirectory', function(done) {
+		var file = path.join(root, 'foo/bar/baz/foo.txt');
+		fs.createFile(file, function(err) {
+			should.not.exist(err);
+			vigilia.monitor(root, function(err, context) {
+				should.not.exist(err);
+				watcher = context;
+				watcher.monitor.on('rename', function(filename) {
+					filename.should.equal(file);
+					done();
+				});
+
+				var newFile = path.join(path.dirname(file), 'bar.txt');
+				fs.rename(file, newFile, function(err) {
+					should.not.exist(err);
+				});
+			});
+		});
+	});
 });

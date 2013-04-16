@@ -43,7 +43,7 @@ function watch(filePath, context, callback) {
 		}
 
 		context.files[filePath] = fs.watch(filePath, function(event) {
-			context.monitor.emit('update', filePath);
+			context.monitor.emit(event === 'rename' ? 'rename' : 'update', filePath);
 		});
 		callback();
 	});
