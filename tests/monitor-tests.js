@@ -416,6 +416,56 @@ describe('Monitoring', function() {
 					});
 				});
 			});
+
+			describe('on a symbolic link', function() {
+				it('should detect modification on source if watching target', function(done) {
+					var source = path.join(root, 'foo.txt'),
+						target = path.join(root, 'link.txt');
+					fs.createFile(source, function(err) {
+						should.not.exist(err);
+						fs.symlink(source, target, function(err) {
+							should.not.exist(err);
+							gargoyle.monitor(target, options, function(err, context) {
+								should.not.exist(err);
+								context.monitor.on('modify', function(filename) {
+									filename.should.equal(target);
+									done();
+								});
+
+								doIo(function() {
+									fs.appendFile(source, 'foo', function(err) {
+										should.not.exist(err);
+									});
+								});
+							});
+						});
+					});
+				});
+
+				it('should detect modification on target if watching source', function(done) {
+					var source = path.join(root, 'foo.txt'),
+						target = path.join(root, 'link.txt');
+					fs.createFile(source, function(err) {
+						should.not.exist(err);
+						fs.symlink(source, target, function(err) {
+							should.not.exist(err);
+							gargoyle.monitor(source, options, function(err, context) {
+								should.not.exist(err);
+								context.monitor.on('modify', function(filename) {
+									filename.should.equal(source);
+									done();
+								});
+
+								doIo(function() {
+									fs.appendFile(target, 'foo', function(err) {
+										should.not.exist(err);
+									});
+								});
+							});
+						});
+					});
+				});
+			});
 		});
 	});
 });
