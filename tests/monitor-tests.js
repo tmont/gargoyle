@@ -116,6 +116,28 @@ describe('Monitoring', function() {
 			});
 		});
 
+		it('should detect modification to created file', function(done) {
+			var file = path.join(root, 'foo.txt');
+			vigilia.monitor(root, function(err, context) {
+				should.not.exist(err);
+				watcher = context;
+				watcher.monitor.on('create', function(filename) {
+					filename.should.equal(file);
+					fs.appendFile(file, 'asdf', function(err) {
+						should.not.exist(err);
+					});
+				});
+				watcher.monitor.on('update', function(filename) {
+					filename.should.equal(file);
+					done();
+				});
+
+				fs.createFile(file, function(err) {
+					should.not.exist(err);
+				});
+			});
+		});
+
 		it('should detect deleted file in root directory', function(done) {
 			var file = path.join(root, 'foo.txt');
 			fs.createFile(file, function(err) {

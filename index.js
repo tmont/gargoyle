@@ -43,8 +43,9 @@ function watch(filePath, context, callback) {
 						return;
 					}
 
-					context.monitor.emit(eventName, newFile);
-//					watch(newFile, context, function() {});
+					watch(newFile, context, function() {
+						context.monitor.emit(eventName, newFile);
+					});
 				});
 			});
 
