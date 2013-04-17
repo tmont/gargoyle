@@ -88,7 +88,7 @@ function watch(filePath, context, callback) {
 	});
 }
 
-exports.monitor = function(dir, options, callback) {
+exports.monitor = function(filename, options, callback) {
 	if (typeof(options) === 'function') {
 		callback = options;
 		options = {};
@@ -103,7 +103,7 @@ exports.monitor = function(dir, options, callback) {
 		}
 	};
 
-	watch(dir, context, function(err) {
+	watch(filename, context, function(err) {
 		if (err) {
 			callback && callback(err);
 			return;
