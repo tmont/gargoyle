@@ -37,331 +37,382 @@ describe('Monitoring', function() {
 		});
 	}
 
-	describe('on a directory', function() {
-		it('should detect change to file in root directory', function(done) {
-			var file = path.join(root, 'foo.txt');
-			fs.createFile(file, function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(root, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					watcher.monitor.on('modify', function(filename) {
-						filename.should.equal(file);
-						done();
-					});
-					ensureNoEvents('create', 'delete', 'rename', done);
+	[ 'watch', 'watchFile' ].forEach(function(type) {
+		var options = { type: type };
 
-					fs.appendFile(file, 'bar', function(err) {
-						should.not.exist(err);
-					});
-				});
-			});
-		});
+		function doIo(thunk) {
+			if (type === 'watchFile') {
+				setTimeout(thunk, 1200);
+			} else {
+				thunk();
+			}
+		}
 
-		it('should detect change to file in subdirectory', function(done) {
-			var file = path.join(root, 'foo/bar/baz/foo.txt');
-			fs.createFile(file, function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(root, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					watcher.monitor.on('modify', function(filename) {
-						filename.should.equal(file);
-						done();
-					});
-					ensureNoEvents('create', 'delete', 'rename', done);
-
-					fs.appendFile(file, 'bar', function(err) {
-						should.not.exist(err);
-					});
-				});
-			});
-		});
-
-		it('should detect created file in root directory', function(done) {
-			var file = path.join(root, 'foo.txt');
-			gargoyle.monitor(root, function(err, context) {
-				should.not.exist(err);
-				watcher = context;
-				watcher.monitor.on('create', function(filename) {
-					filename.should.equal(file);
-					done();
-				});
-				ensureNoEvents('modify', 'delete', 'rename', done);
-
-				fs.createFile(file, function(err) {
-					should.not.exist(err);
-				});
-			});
-		});
-
-		it('should detect created file in subdirectory', function(done) {
-			var file = path.join(root, 'foo/bar/baz/foo.txt');
-			fs.mkdirs(path.join(root, 'foo/bar/baz'), function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(root, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					watcher.monitor.on('create', function(filename) {
-						filename.should.equal(file);
-						done();
-					});
-					ensureNoEvents('modify', 'delete', 'rename', done);
-
+		describe('using ' + type, function() {
+			describe('on a directory', function() {
+				it('should detect change to file in root directory', function(done) {
+					var file = path.join(root, 'foo.txt');
 					fs.createFile(file, function(err) {
 						should.not.exist(err);
-					});
-				});
-			});
-		});
-
-		it('should detect modification to created file', function(done) {
-			var file = path.join(root, 'foo.txt');
-			gargoyle.monitor(root, function(err, context) {
-				should.not.exist(err);
-				watcher = context;
-				watcher.monitor.on('create', function(filename) {
-					filename.should.equal(file);
-					fs.appendFile(file, 'asdf', function(err) {
-						should.not.exist(err);
-					});
-				});
-				watcher.monitor.on('modify', function(filename) {
-					filename.should.equal(file);
-					done();
-				});
-
-				fs.createFile(file, function(err) {
-					should.not.exist(err);
-				});
-			});
-		});
-
-		it('should detect deleted file in root directory', function(done) {
-			var file = path.join(root, 'foo.txt');
-			fs.createFile(file, function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(root, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					watcher.monitor.on('delete', function(filename) {
-						filename.should.equal(file);
-						done();
-					});
-					ensureNoEvents('create', 'modify', 'rename', done);
-
-					fs.unlink(file, function(err) {
-						should.not.exist(err);
-					});
-				});
-			});
-		});
-
-		it('should detect deleted file in subdirectory', function(done) {
-			var file = path.join(root, 'foo/bar/baz/foo.txt');
-			fs.createFile(file, function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(root, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					watcher.monitor.on('delete', function(filename) {
-						filename.should.equal(file);
-						done();
-					});
-					ensureNoEvents('create', 'modify', 'rename', done);
-
-					fs.unlink(file, function(err) {
-						should.not.exist(err);
-					});
-				});
-			});
-		});
-
-		it('should detect renamed file in root directory', function(done) {
-			var file = path.join(root, 'foo.txt');
-			fs.createFile(file, function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(root, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					watcher.monitor.on('rename', function(filename) {
-						filename.should.equal(file);
-						done();
-					});
-					ensureNoEvents('delete', 'modify', done);
-
-					var newFile = path.join(path.dirname(file), 'bar.txt');
-					fs.rename(file, newFile, function(err) {
-						should.not.exist(err);
-					});
-				});
-			});
-		});
-
-		it('should detect renamed file in subdirectory', function(done) {
-			var file = path.join(root, 'foo/bar/baz/foo.txt');
-			fs.createFile(file, function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(root, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					watcher.monitor.on('rename', function(filename) {
-						filename.should.equal(file);
-						done();
-					});
-					ensureNoEvents('delete', 'modify', done);
-
-					var newFile = path.join(path.dirname(file), 'bar.txt');
-					fs.rename(file, newFile, function(err) {
-						should.not.exist(err);
-					});
-				});
-			});
-		});
-
-		it('should emit "rename" and "create" for renamed files', function(done) {
-			var file = path.join(root, 'foo/bar/baz/foo.txt');
-			var newFile = path.join(path.dirname(file), 'bar.txt');
-			fs.createFile(file, function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(root, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					var renamed = false, created = false;
-					watcher.monitor.on('rename', function(filename) {
-						filename.should.equal(file);
-						renamed = true;
-						if (created) {
-							done();
-						}
-					});
-					watcher.monitor.on('create', function(filename) {
-						filename.should.equal(newFile);
-						created = true;
-						if (renamed) {
-							done();
-						}
-					});
-					ensureNoEvents('delete', 'modify', done);
-
-					fs.rename(file, newFile, function(err) {
-						should.not.exist(err);
-					});
-				});
-			});
-		});
-
-		it('should stop watching', function(done) {
-			var file = path.join(root, 'foo.txt');
-			fs.createFile(file, function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(root, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-
-					fs.createFile(path.join(root, 'bar.txt'), function(err) {
-						should.not.exist(err);
-						//create will be triggered, hence its absence here
-						ensureNoEvents('modify', 'delete', 'rename', done);
-						context.stop(function() {
-							fs.appendFile(file, 'bar', function(err) {
-								should.not.exist(err);
+						gargoyle.monitor(root, options, function(err, context) {
+							should.not.exist(err);
+							watcher = context;
+							watcher.monitor.on('modify', function(filename) {
+								filename.should.equal(file);
 								done();
+							});
+							ensureNoEvents('create', 'delete', 'rename', done);
+
+							doIo(function() {
+								fs.appendFile(file, 'bar', function(err) {
+									should.not.exist(err);
+								});
+							});
+						});
+					});
+				});
+
+				it('should detect change to file in subdirectory', function(done) {
+					var file = path.join(root, 'foo/bar/baz/foo.txt');
+					fs.createFile(file, function(err) {
+						should.not.exist(err);
+						gargoyle.monitor(root, options, function(err, context) {
+							should.not.exist(err);
+							watcher = context;
+							watcher.monitor.on('modify', function(filename) {
+								filename.should.equal(file);
+								done();
+							});
+							ensureNoEvents('create', 'delete', 'rename', done);
+
+							doIo(function() {
+								fs.appendFile(file, 'bar', function(err) {
+									should.not.exist(err);
+								});
+							});
+						});
+					});
+				});
+
+				it('should detect created file in root directory', function(done) {
+					var file = path.join(root, 'foo.txt');
+					gargoyle.monitor(root, options, function(err, context) {
+						should.not.exist(err);
+						watcher = context;
+						watcher.monitor.on('create', function(filename) {
+							if (type === 'watchFile') {
+								filename.should.equal(path.dirname(file));
+							} else {
+								filename.should.equal(file);
+							}
+							done();
+						});
+						ensureNoEvents('modify', 'delete', 'rename', done);
+
+						doIo(function() {
+							fs.createFile(file, function(err) {
+								should.not.exist(err);
+							});
+						});
+					});
+				});
+
+				it('should detect created file in subdirectory', function(done) {
+					var file = path.join(root, 'foo/bar/baz/foo.txt');
+					fs.mkdirs(path.join(root, 'foo/bar/baz'), function(err) {
+						should.not.exist(err);
+						gargoyle.monitor(root, options, function(err, context) {
+							should.not.exist(err);
+							watcher = context;
+							watcher.monitor.on('create', function(filename) {
+								if (type === 'watchFile') {
+									filename.should.equal(path.dirname(file));
+								} else {
+									filename.should.equal(file);
+								}
+								done();
+							});
+							ensureNoEvents('modify', 'delete', 'rename', done);
+
+							doIo(function() {
+								fs.createFile(file, function(err) {
+									should.not.exist(err);
+								});
+							});
+						});
+					});
+				});
+
+				it('should detect modification to created file', function(done) {
+					var file = path.join(root, 'foo.txt');
+					gargoyle.monitor(root, options, function(err, context) {
+						should.not.exist(err);
+						watcher = context;
+						watcher.monitor.on('create', function(filename) {
+							if (type === 'watchFile') {
+								filename.should.equal(path.dirname(file));
+							} else {
+								filename.should.equal(file);
+							}
+							doIo(function() {
+								fs.appendFile(file, 'asdf', function(err) {
+									should.not.exist(err);
+								});
+							});
+						});
+						watcher.monitor.on('modify', function(filename) {
+							filename.should.equal(file);
+							done();
+						});
+
+						doIo(function() {
+							fs.createFile(file, function(err) {
+								should.not.exist(err);
+							});
+						});
+					});
+				});
+
+				it('should detect deleted file in root directory', function(done) {
+					var file = path.join(root, 'foo.txt');
+					fs.createFile(file, function(err) {
+						should.not.exist(err);
+						gargoyle.monitor(root, options, function(err, context) {
+							should.not.exist(err);
+							watcher = context;
+							watcher.monitor.on('delete', function(filename) {
+								filename.should.equal(file);
+								done();
+							});
+							ensureNoEvents('create', 'modify', 'rename', done);
+
+							fs.unlink(file, function(err) {
+								should.not.exist(err);
+							});
+						});
+					});
+				});
+
+				it('should detect deleted file in subdirectory', function(done) {
+					var file = path.join(root, 'foo/bar/baz/foo.txt');
+					fs.createFile(file, function(err) {
+						should.not.exist(err);
+						gargoyle.monitor(root, options, function(err, context) {
+							should.not.exist(err);
+							watcher = context;
+							watcher.monitor.on('delete', function(filename) {
+								filename.should.equal(file);
+								done();
+							});
+							ensureNoEvents('create', 'modify', 'rename', done);
+
+							fs.unlink(file, function(err) {
+								should.not.exist(err);
+							});
+						});
+					});
+				});
+
+				if (type !== 'watchFile') {
+					it('should detect renamed file in root directory', function(done) {
+						var file = path.join(root, 'foo.txt');
+						fs.createFile(file, function(err) {
+							should.not.exist(err);
+							gargoyle.monitor(root, options, function(err, context) {
+								should.not.exist(err);
+								watcher = context;
+								watcher.monitor.on('rename', function(filename) {
+									filename.should.equal(file);
+									done();
+								});
+								ensureNoEvents('delete', 'modify', done);
+
+								var newFile = path.join(path.dirname(file), 'bar.txt');
+								fs.rename(file, newFile, function(err) {
+									should.not.exist(err);
+								});
+							});
+						});
+					});
+
+					it('should detect renamed file in subdirectory', function(done) {
+						var file = path.join(root, 'foo/bar/baz/foo.txt');
+						fs.createFile(file, function(err) {
+							should.not.exist(err);
+							gargoyle.monitor(root, options, function(err, context) {
+								should.not.exist(err);
+								watcher = context;
+								watcher.monitor.on('rename', function(filename) {
+									filename.should.equal(file);
+									done();
+								});
+								ensureNoEvents('delete', 'modify', done);
+
+								var newFile = path.join(path.dirname(file), 'bar.txt');
+								fs.rename(file, newFile, function(err) {
+									should.not.exist(err);
+								});
+							});
+						});
+					});
+
+					it('should emit "rename" and "create" for renamed files', function(done) {
+						var file = path.join(root, 'foo/bar/baz/foo.txt');
+						var newFile = path.join(path.dirname(file), 'bar.txt');
+						fs.createFile(file, function(err) {
+							should.not.exist(err);
+							gargoyle.monitor(root, options, function(err, context) {
+								should.not.exist(err);
+								watcher = context;
+								var renamed = false, created = false;
+								watcher.monitor.on('rename', function(filename) {
+									filename.should.equal(file);
+									renamed = true;
+									if (created) {
+										done();
+									}
+								});
+								watcher.monitor.on('create', function(filename) {
+									filename.should.equal(newFile);
+									created = true;
+									if (renamed) {
+										done();
+									}
+								});
+								ensureNoEvents('delete', 'modify', done);
+
+								fs.rename(file, newFile, function(err) {
+									should.not.exist(err);
+								});
+							});
+						});
+					});
+				}
+
+				it('should stop watching', function(done) {
+					var file = path.join(root, 'foo.txt');
+					fs.createFile(file, function(err) {
+						should.not.exist(err);
+						gargoyle.monitor(root, options, function(err, context) {
+							should.not.exist(err);
+							watcher = context;
+
+							fs.createFile(path.join(root, 'bar.txt'), function(err) {
+								should.not.exist(err);
+								//create will be triggered, hence its absence here
+								ensureNoEvents('modify', 'delete', 'rename', done);
+								context.stop(function() {
+									fs.appendFile(file, 'bar', function(err) {
+										should.not.exist(err);
+										done();
+									});
+								});
+							});
+						});
+					});
+				});
+
+				it('should exclude watched files', function(done) {
+					var files = [ 'foo', 'bar', 'baz' ].map(function(name) {
+						return path.join(root, name);
+					});
+
+					async.forEach(files, function(filename, next) {
+						fs.createFile(filename, next);
+					}, function(err) {
+						should.not.exist(err);
+						options.exclude = function(filename, stat) {
+							stat.should.be.instanceOf(fs.Stats);
+							return /^b/.test(path.basename(filename));
+						};
+						gargoyle.monitor(root, options, function(err, context) {
+							should.not.exist(err);
+							watcher = context;
+							ensureNoEvents('create', 'delete', 'rename', 'modify', done);
+
+							doIo(function() {
+								fs.appendFile(files[1], 'bar', function(err) {
+									should.not.exist(err);
+
+									//meh, this is not awesome, but whatever
+									setTimeout(function() {
+										done();
+									}, 250);
+								});
 							});
 						});
 					});
 				});
 			});
-		});
 
-		it('should exclude watched files', function(done) {
-			var files = [ 'foo', 'bar', 'baz' ].map(function(name) {
-				return path.join(root, name);
-			});
+			describe('on a single file', function() {
+				if (type !== 'watchFile') {
+					//don't support renames using fs.watchFile
+					it('should detect rename', function(done) {
+						var file = path.join(root, 'foo.txt');
+						var newFile = path.join(path.dirname(file), 'bar.txt');
+						fs.createFile(file, function(err) {
+							should.not.exist(err);
+							gargoyle.monitor(file, options, function(err, context) {
+								should.not.exist(err);
+								watcher = context;
+								watcher.monitor.on('rename', function(filename) {
+									filename.should.equal(file);
+									done();
+								});
+								ensureNoEvents('create', 'delete', 'modify', done);
 
-			async.forEach(files, function(filename, next) {
-				fs.createFile(filename, next);
-			}, function(err) {
-				should.not.exist(err);
-				var options = {
-					exclude: function(filename, stat) {
-						stat.should.be.instanceOf(fs.Stats);
-						return /^b/.test(path.basename(filename));
-					}
-				};
-				gargoyle.monitor(root, options, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					ensureNoEvents('create', 'delete', 'rename', 'modify', done);
+								doIo(function() {
+									fs.rename(file, newFile, function(err) {
+										should.not.exist(err);
+									});
+								});
+							});
+						});
+					});
+				}
 
-					fs.appendFile(files[1], 'bar', function(err) {
+				it('should detect modification', function(done) {
+					var file = path.join(root, 'foo.txt');
+					fs.createFile(file, function(err) {
 						should.not.exist(err);
+						gargoyle.monitor(file, options, function(err, context) {
+							should.not.exist(err);
+							watcher = context;
+							watcher.monitor.on('modify', function(filename) {
+								filename.should.equal(file);
+								done();
+							});
+							ensureNoEvents('create', 'delete', 'rename', done);
 
-						//meh, this is not awesome, but whatever
-						setTimeout(function() { done(); }, 250);
+							doIo(function() {
+								fs.appendFile(file, 'bar', function(err) {
+									should.not.exist(err);
+								});
+							});
+						});
 					});
 				});
-			});
-		});
-	});
 
-	describe('on a single file', function() {
-		it('should detect rename', function(done) {
-			var file = path.join(root, 'foo.txt');
-			var newFile = path.join(path.dirname(file), 'bar.txt');
-			fs.createFile(file, function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(file, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					watcher.monitor.on('rename', function(filename) {
-						filename.should.equal(file);
-						done();
-					});
-					ensureNoEvents('create', 'delete', 'modify', done);
-
-					fs.rename(file, newFile, function(err) {
+				it('should detect deletion', function(done) {
+					var file = path.join(root, 'foo.txt');
+					fs.createFile(file, function(err) {
 						should.not.exist(err);
-					});
-				});
-			});
-		});
+						gargoyle.monitor(file, options, function(err, context) {
+							should.not.exist(err);
+							watcher = context;
+							watcher.monitor.on('delete', function(filename) {
+								filename.should.equal(file);
+								done();
+							});
+							ensureNoEvents('create', 'rename', 'modify', done);
 
-		it('should detect modification', function(done) {
-			var file = path.join(root, 'foo.txt');
-			fs.createFile(file, function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(file, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					watcher.monitor.on('modify', function(filename) {
-						filename.should.equal(file);
-						done();
-					});
-					ensureNoEvents('create', 'delete', 'rename', done);
-
-					fs.appendFile(file, 'bar', function(err) {
-						should.not.exist(err);
-					});
-				});
-			});
-		});
-
-		it('should detect deletion', function(done) {
-			var file = path.join(root, 'foo.txt');
-			fs.createFile(file, function(err) {
-				should.not.exist(err);
-				gargoyle.monitor(file, function(err, context) {
-					should.not.exist(err);
-					watcher = context;
-					watcher.monitor.on('delete', function(filename) {
-						filename.should.equal(file);
-						done();
-					});
-					ensureNoEvents('create', 'rename', 'modify', done);
-
-					fs.unlink(file, function(err) {
-						should.not.exist(err);
+							doIo(function() {
+								fs.unlink(file, function(err) {
+									should.not.exist(err);
+								})
+							});
+						});
 					});
 				});
 			});

@@ -21,6 +21,6 @@
 	},
 
 	"scripts": {
-		"test": "node_modules/.bin/mocha -R spec tests"
+		"test": "node_modules/.bin/mocha -R spec -t 5000 tests"
 	}
 }
