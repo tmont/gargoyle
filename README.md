@@ -40,16 +40,16 @@ gargoyle.monitor('/some/dir', function(err, context) {
 	//context.files is a hash of filename -> FSWatcher
 	//context.monitor is an EventEmitter
 
-	context.monitor.on('changed', function(filename) {
+	context.monitor.on('modify', function(filename) {
 		console.log(filename + ' was modified');
 	});
-	context.monitor.on('deleted', function(filename) {
+	context.monitor.on('delete', function(filename) {
         console.log(filename + ' was deleted');
     });
-    context.monitor.on('created', function(filename) {
+    context.monitor.on('create', function(filename) {
         console.log(filename + ' was created');
     });
-    context.monitor.on('renamed', function(filename) {
+    context.monitor.on('rename', function(filename) {
         console.log(filename + ' was renamed');
     });
 });
@@ -69,7 +69,6 @@ context.monitor.stop(function() {
 //context is now worthless
 ```
 
-
 ## Development
 ```bash
 git clone git@github.com:tmont/gargoyle.git
@@ -77,4 +76,3 @@ cd gargoyle
 npm install
 npm test
 ```
-

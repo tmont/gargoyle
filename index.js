@@ -16,7 +16,7 @@ function getRealEvent(event, filePath, context, callback) {
 			}
 		} else {
 			eventName = exists
-				? (event === 'rename' ? 'rename' : 'update')
+				? (event === 'rename' ? 'rename' : 'modify')
 				: (event === 'change' ? 'delete' : 'rename');
 			if (eventName === 'delete') {
 				context.files[filePath].close();

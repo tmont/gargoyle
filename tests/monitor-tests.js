@@ -45,7 +45,7 @@ describe('Monitoring', function() {
 				gargoyle.monitor(root, function(err, context) {
 					should.not.exist(err);
 					watcher = context;
-					watcher.monitor.on('update', function(filename) {
+					watcher.monitor.on('modify', function(filename) {
 						filename.should.equal(file);
 						done();
 					});
@@ -65,7 +65,7 @@ describe('Monitoring', function() {
 				gargoyle.monitor(root, function(err, context) {
 					should.not.exist(err);
 					watcher = context;
-					watcher.monitor.on('update', function(filename) {
+					watcher.monitor.on('modify', function(filename) {
 						filename.should.equal(file);
 						done();
 					});
@@ -87,7 +87,7 @@ describe('Monitoring', function() {
 					filename.should.equal(file);
 					done();
 				});
-				ensureNoEvents('update', 'delete', 'rename', done);
+				ensureNoEvents('modify', 'delete', 'rename', done);
 
 				fs.createFile(file, function(err) {
 					should.not.exist(err);
@@ -106,7 +106,7 @@ describe('Monitoring', function() {
 						filename.should.equal(file);
 						done();
 					});
-					ensureNoEvents('update', 'delete', 'rename', done);
+					ensureNoEvents('modify', 'delete', 'rename', done);
 
 					fs.createFile(file, function(err) {
 						should.not.exist(err);
@@ -126,7 +126,7 @@ describe('Monitoring', function() {
 						should.not.exist(err);
 					});
 				});
-				watcher.monitor.on('update', function(filename) {
+				watcher.monitor.on('modify', function(filename) {
 					filename.should.equal(file);
 					done();
 				});
@@ -148,7 +148,7 @@ describe('Monitoring', function() {
 						filename.should.equal(file);
 						done();
 					});
-					ensureNoEvents('create', 'update', 'rename', done);
+					ensureNoEvents('create', 'modify', 'rename', done);
 
 					fs.unlink(file, function(err) {
 						should.not.exist(err);
@@ -168,7 +168,7 @@ describe('Monitoring', function() {
 						filename.should.equal(file);
 						done();
 					});
-					ensureNoEvents('create', 'update', 'rename', done);
+					ensureNoEvents('create', 'modify', 'rename', done);
 
 					fs.unlink(file, function(err) {
 						should.not.exist(err);
@@ -188,7 +188,7 @@ describe('Monitoring', function() {
 						filename.should.equal(file);
 						done();
 					});
-					ensureNoEvents('delete', 'update', done);
+					ensureNoEvents('delete', 'modify', done);
 
 					var newFile = path.join(path.dirname(file), 'bar.txt');
 					fs.rename(file, newFile, function(err) {
@@ -209,7 +209,7 @@ describe('Monitoring', function() {
 						filename.should.equal(file);
 						done();
 					});
-					ensureNoEvents('delete', 'update', done);
+					ensureNoEvents('delete', 'modify', done);
 
 					var newFile = path.join(path.dirname(file), 'bar.txt');
 					fs.rename(file, newFile, function(err) {
@@ -242,7 +242,7 @@ describe('Monitoring', function() {
 							done();
 						}
 					});
-					ensureNoEvents('delete', 'update', done);
+					ensureNoEvents('delete', 'modify', done);
 
 					fs.rename(file, newFile, function(err) {
 						should.not.exist(err);
@@ -262,7 +262,7 @@ describe('Monitoring', function() {
 					fs.createFile(path.join(root, 'bar.txt'), function(err) {
 						should.not.exist(err);
 						//create will be triggered, hence its absence here
-						ensureNoEvents('update', 'delete', 'rename', done);
+						ensureNoEvents('modify', 'delete', 'rename', done);
 						context.stop(function() {
 							fs.appendFile(file, 'bar', function(err) {
 								should.not.exist(err);
@@ -274,7 +274,7 @@ describe('Monitoring', function() {
 			});
 		});
 
-		it('should filter watched files', function(done) {
+		it('should exclude watched files', function(done) {
 			var files = [ 'foo', 'bar', 'baz' ].map(function(name) {
 				return path.join(root, name);
 			});
@@ -291,7 +291,7 @@ describe('Monitoring', function() {
 				gargoyle.monitor(root, options, function(err, context) {
 					should.not.exist(err);
 					watcher = context;
-					ensureNoEvents('create', 'delete', 'rename', 'update', done);
+					ensureNoEvents('create', 'delete', 'rename', 'modify', done);
 
 					fs.appendFile(files[1], 'bar', function(err) {
 						should.not.exist(err);
@@ -317,7 +317,7 @@ describe('Monitoring', function() {
 						filename.should.equal(file);
 						done();
 					});
-					ensureNoEvents('create', 'delete', 'update', done);
+					ensureNoEvents('create', 'delete', 'modify', done);
 
 					fs.rename(file, newFile, function(err) {
 						should.not.exist(err);
@@ -333,7 +333,7 @@ describe('Monitoring', function() {
 				gargoyle.monitor(file, function(err, context) {
 					should.not.exist(err);
 					watcher = context;
-					watcher.monitor.on('update', function(filename) {
+					watcher.monitor.on('modify', function(filename) {
 						filename.should.equal(file);
 						done();
 					});
@@ -357,7 +357,7 @@ describe('Monitoring', function() {
 						filename.should.equal(file);
 						done();
 					});
-					ensureNoEvents('create', 'rename', 'update', done);
+					ensureNoEvents('create', 'rename', 'modify', done);
 
 					fs.unlink(file, function(err) {
 						should.not.exist(err);
