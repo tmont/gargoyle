@@ -73,7 +73,7 @@ context.stop(function() {
 
 ### Options
 There are a few different options you can pass as an optional
-third parameter to `gargoyle.monitor`.
+second parameter to `gargoyle.monitor`.
 
 #### Exclude certain files
 ```javascript
