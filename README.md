@@ -59,11 +59,6 @@ gargoyle.monitor('/some/dir', function(err, context) {
 
 Stop monitoring:
 ```javascript
-gargoyle.stop(context, function() {
-	console.log('monitors stopped');
-});
-
-//or, equivalently
 context.stop(function() {
 	console.log('monitors stopped');
 });

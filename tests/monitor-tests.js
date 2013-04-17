@@ -21,7 +21,7 @@ describe('Monitoring', function() {
 		}
 
 		if (watcher) {
-			gargoyle.stop(watcher, deleteFiles);
+			watcher.stop(deleteFiles);
 		} else {
 			deleteFiles();
 		}

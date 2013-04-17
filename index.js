@@ -159,7 +159,16 @@ exports.monitor = function(filename, options, callback) {
 		monitor: new EventEmitter(),
 		files: {},
 		stop: function(callback) {
-			exports.stop(this, callback);
+			var context = this;
+			async.forEachLimit(Object.keys(context.files), 30, function(filename, next) {
+				if (context.options.type === 'watch') {
+					context.files[filename].close();
+				} else {
+					fs.unwatchFile(filename);
+				}
+				delete context.files[filename];
+				process.nextTick(next);
+			}, callback);
 		}
 	};
 
@@ -171,16 +180,4 @@ exports.monitor = function(filename, options, callback) {
 
 		callback && callback(null, context);
 	});
-};
-
-exports.stop = function(context, callback) {
-	async.forEachLimit(Object.keys(context.files), 30, function(filename, next) {
-		if (context.options.type === 'watch') {
-			context.files[filename].close();
-		} else {
-			fs.unwatchFile(filename);
-		}
-		delete context.files[filename];
-		process.nextTick(next);
-	}, callback);
 };
