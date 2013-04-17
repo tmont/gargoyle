@@ -18,10 +18,10 @@ recursively.
 
 When something changes, it'll emit one of the following events:
 
-* `changed` - when a file is modified
-* `created` - when a file is created
-* `deleted` - when a file is deleted
-* `renamed` - when a file is renamed
+* `modify` - when a file is modified
+* `create` - when a file is created
+* `delete` - when a file is deleted
+* `rename` - when a file is renamed
 
 Your event listener should be a function that takes one argument: the
 absolute path of the file that got modified/created/deleted/renamed.
