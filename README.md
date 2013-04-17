@@ -60,12 +60,17 @@ Exclude certain files:
 ```javascript
 var path = require('path');
 var options = {
-	exclude: function(filename) {
+	exclude: function(filename, stat) {
 		//note: filename is absolute
 		var basename = path.basename(filename);
 
 		//ignore dotfiles
 		if (basename.charAt(0) === '.') {
+			return true;
+		}
+
+		//ignore the static directory
+		if (stat.isDirectory() && basename === 'static') {
 			return true;
 		}
 

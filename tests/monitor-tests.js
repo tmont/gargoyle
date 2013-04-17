@@ -284,7 +284,8 @@ describe('Monitoring', function() {
 			}, function(err) {
 				should.not.exist(err);
 				var options = {
-					exclude: function(filename) {
+					exclude: function(filename, stat) {
+						stat.should.be.instanceOf(fs.Stats);
 						return /^b/.test(path.basename(filename));
 					}
 				};

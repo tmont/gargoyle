@@ -29,14 +29,14 @@ function getRealEvent(event, filePath, context, callback) {
 }
 
 function watch(filePath, context, callback) {
-	if (context.options.exclude && context.options.exclude(filePath)) {
-		callback();
-		return;
-	}
-
 	fs.stat(filePath, function(err, stat) {
 		if (err) {
 			callback && callback(err);
+			return;
+		}
+
+		if (context.options.exclude && context.options.exclude(filePath, stat)) {
+			callback();
 			return;
 		}
 
