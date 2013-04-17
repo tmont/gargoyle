@@ -2,6 +2,7 @@ var should = require('should'),
 	path = require('path'),
 	root = path.join(__dirname, 'tmp'),
 	gargoyle = require('../'),
+	async = require('async'),
 	fs = require('fs-extra');
 
 describe('Monitoring', function() {
@@ -268,6 +269,35 @@ describe('Monitoring', function() {
 								done();
 							});
 						});
+					});
+				});
+			});
+		});
+
+		it('should filter watched files', function(done) {
+			var files = [ 'foo', 'bar', 'baz' ].map(function(name) {
+				return path.join(root, name);
+			});
+
+			async.forEach(files, function(filename, next) {
+				fs.createFile(filename, next);
+			}, function(err) {
+				should.not.exist(err);
+				var options = {
+					exclude: function(filename) {
+						return /^b/.test(path.basename(filename));
+					}
+				};
+				gargoyle.monitor(root, options, function(err, context) {
+					should.not.exist(err);
+					watcher = context;
+					ensureNoEvents('create', 'delete', 'rename', 'update', done);
+
+					fs.appendFile(files[1], 'bar', function(err) {
+						should.not.exist(err);
+
+						//meh, this is not awesome, but whatever
+						setTimeout(function() { done(); }, 250);
 					});
 				});
 			});

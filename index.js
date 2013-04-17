@@ -29,6 +29,11 @@ function getRealEvent(event, filePath, context, callback) {
 }
 
 function watch(filePath, context, callback) {
+	if (context.options.exclude && context.options.exclude(filePath)) {
+		callback();
+		return;
+	}
+
 	fs.stat(filePath, function(err, stat) {
 		if (err) {
 			callback && callback(err);
@@ -83,8 +88,14 @@ function watch(filePath, context, callback) {
 	});
 }
 
-exports.monitor = function(dir, callback) {
+exports.monitor = function(dir, options, callback) {
+	if (typeof(options) === 'function') {
+		callback = options;
+		options = {};
+	}
+
 	var context = {
+		options: options,
 		monitor: new EventEmitter(),
 		files: {},
 		stop: function(callback) {
