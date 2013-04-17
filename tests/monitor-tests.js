@@ -31,7 +31,7 @@ describe('Monitoring', function() {
 		var events = [].slice.call(arguments),
 			done = events.pop();
 		events.forEach(function(event) {
-			watcher.monitor.on(event, function() {
+			watcher.on(event, function() {
 				done('"' + event + '" should not have been emitted');
 			});
 		});
@@ -54,10 +54,10 @@ describe('Monitoring', function() {
 					var file = path.join(root, 'foo.txt');
 					fs.createFile(file, function(err) {
 						should.not.exist(err);
-						gargoyle.monitor(root, options, function(err, context) {
+						gargoyle.monitor(root, options, function(err, monitor) {
 							should.not.exist(err);
-							watcher = context;
-							watcher.monitor.on('modify', function(filename) {
+							watcher = monitor;
+							watcher.on('modify', function(filename) {
 								filename.should.equal(file);
 								done();
 							});
@@ -76,10 +76,10 @@ describe('Monitoring', function() {
 					var file = path.join(root, 'foo/bar/baz/foo.txt');
 					fs.createFile(file, function(err) {
 						should.not.exist(err);
-						gargoyle.monitor(root, options, function(err, context) {
+						gargoyle.monitor(root, options, function(err, monitor) {
 							should.not.exist(err);
-							watcher = context;
-							watcher.monitor.on('modify', function(filename) {
+							watcher = monitor;
+							watcher.on('modify', function(filename) {
 								filename.should.equal(file);
 								done();
 							});
@@ -96,10 +96,10 @@ describe('Monitoring', function() {
 
 				it('should detect created file in root directory', function(done) {
 					var file = path.join(root, 'foo.txt');
-					gargoyle.monitor(root, options, function(err, context) {
+					gargoyle.monitor(root, options, function(err, monitor) {
 						should.not.exist(err);
-						watcher = context;
-						watcher.monitor.on('create', function(filename) {
+						watcher = monitor;
+						watcher.on('create', function(filename) {
 							if (type === 'watchFile') {
 								filename.should.equal(path.dirname(file));
 							} else {
@@ -121,10 +121,10 @@ describe('Monitoring', function() {
 					var file = path.join(root, 'foo/bar/baz/foo.txt');
 					fs.mkdirs(path.join(root, 'foo/bar/baz'), function(err) {
 						should.not.exist(err);
-						gargoyle.monitor(root, options, function(err, context) {
+						gargoyle.monitor(root, options, function(err, monitor) {
 							should.not.exist(err);
-							watcher = context;
-							watcher.monitor.on('create', function(filename) {
+							watcher = monitor;
+							watcher.on('create', function(filename) {
 								if (type === 'watchFile') {
 									filename.should.equal(path.dirname(file));
 								} else {
@@ -145,10 +145,10 @@ describe('Monitoring', function() {
 
 				it('should detect modification to created file', function(done) {
 					var file = path.join(root, 'foo.txt');
-					gargoyle.monitor(root, options, function(err, context) {
+					gargoyle.monitor(root, options, function(err, monitor) {
 						should.not.exist(err);
-						watcher = context;
-						watcher.monitor.on('create', function(filename) {
+						watcher = monitor;
+						watcher.on('create', function(filename) {
 							if (type === 'watchFile') {
 								filename.should.equal(path.dirname(file));
 							} else {
@@ -160,7 +160,7 @@ describe('Monitoring', function() {
 								});
 							});
 						});
-						watcher.monitor.on('modify', function(filename) {
+						watcher.on('modify', function(filename) {
 							filename.should.equal(file);
 							done();
 						});
@@ -177,10 +177,10 @@ describe('Monitoring', function() {
 					var file = path.join(root, 'foo.txt');
 					fs.createFile(file, function(err) {
 						should.not.exist(err);
-						gargoyle.monitor(root, options, function(err, context) {
+						gargoyle.monitor(root, options, function(err, monitor) {
 							should.not.exist(err);
-							watcher = context;
-							watcher.monitor.on('delete', function(filename) {
+							watcher = monitor;
+							watcher.on('delete', function(filename) {
 								filename.should.equal(file);
 								done();
 							});
@@ -197,10 +197,10 @@ describe('Monitoring', function() {
 					var file = path.join(root, 'foo/bar/baz/foo.txt');
 					fs.createFile(file, function(err) {
 						should.not.exist(err);
-						gargoyle.monitor(root, options, function(err, context) {
+						gargoyle.monitor(root, options, function(err, monitor) {
 							should.not.exist(err);
-							watcher = context;
-							watcher.monitor.on('delete', function(filename) {
+							watcher = monitor;
+							watcher.on('delete', function(filename) {
 								filename.should.equal(file);
 								done();
 							});
@@ -218,10 +218,10 @@ describe('Monitoring', function() {
 						var file = path.join(root, 'foo.txt');
 						fs.createFile(file, function(err) {
 							should.not.exist(err);
-							gargoyle.monitor(root, options, function(err, context) {
+							gargoyle.monitor(root, options, function(err, monitor) {
 								should.not.exist(err);
-								watcher = context;
-								watcher.monitor.on('rename', function(filename) {
+								watcher = monitor;
+								watcher.on('rename', function(filename) {
 									filename.should.equal(file);
 									done();
 								});
@@ -239,10 +239,10 @@ describe('Monitoring', function() {
 						var file = path.join(root, 'foo/bar/baz/foo.txt');
 						fs.createFile(file, function(err) {
 							should.not.exist(err);
-							gargoyle.monitor(root, options, function(err, context) {
+							gargoyle.monitor(root, options, function(err, monitor) {
 								should.not.exist(err);
-								watcher = context;
-								watcher.monitor.on('rename', function(filename) {
+								watcher = monitor;
+								watcher.on('rename', function(filename) {
 									filename.should.equal(file);
 									done();
 								});
@@ -261,18 +261,18 @@ describe('Monitoring', function() {
 						var newFile = path.join(path.dirname(file), 'bar.txt');
 						fs.createFile(file, function(err) {
 							should.not.exist(err);
-							gargoyle.monitor(root, options, function(err, context) {
+							gargoyle.monitor(root, options, function(err, monitor) {
 								should.not.exist(err);
-								watcher = context;
+								watcher = monitor;
 								var renamed = false, created = false;
-								watcher.monitor.on('rename', function(filename) {
+								watcher.on('rename', function(filename) {
 									filename.should.equal(file);
 									renamed = true;
 									if (created) {
 										done();
 									}
 								});
-								watcher.monitor.on('create', function(filename) {
+								watcher.on('create', function(filename) {
 									filename.should.equal(newFile);
 									created = true;
 									if (renamed) {
@@ -293,15 +293,15 @@ describe('Monitoring', function() {
 					var file = path.join(root, 'foo.txt');
 					fs.createFile(file, function(err) {
 						should.not.exist(err);
-						gargoyle.monitor(root, options, function(err, context) {
+						gargoyle.monitor(root, options, function(err, monitor) {
 							should.not.exist(err);
-							watcher = context;
+							watcher = monitor;
 
 							fs.createFile(path.join(root, 'bar.txt'), function(err) {
 								should.not.exist(err);
 								//create will be triggered, hence its absence here
 								ensureNoEvents('modify', 'delete', 'rename', done);
-								context.stop(function() {
+								watcher.stop(function() {
 									fs.appendFile(file, 'bar', function(err) {
 										should.not.exist(err);
 										done();
@@ -325,9 +325,9 @@ describe('Monitoring', function() {
 							stat.should.be.instanceOf(fs.Stats);
 							return /^b/.test(path.basename(filename));
 						};
-						gargoyle.monitor(root, options, function(err, context) {
+						gargoyle.monitor(root, options, function(err, monitor) {
 							should.not.exist(err);
-							watcher = context;
+							watcher = monitor;
 							ensureNoEvents('create', 'delete', 'rename', 'modify', done);
 
 							doIo(function() {
@@ -353,10 +353,10 @@ describe('Monitoring', function() {
 						var newFile = path.join(path.dirname(file), 'bar.txt');
 						fs.createFile(file, function(err) {
 							should.not.exist(err);
-							gargoyle.monitor(file, options, function(err, context) {
+							gargoyle.monitor(file, options, function(err, monitor) {
 								should.not.exist(err);
-								watcher = context;
-								watcher.monitor.on('rename', function(filename) {
+								watcher = monitor;
+								watcher.on('rename', function(filename) {
 									filename.should.equal(file);
 									done();
 								});
@@ -376,10 +376,10 @@ describe('Monitoring', function() {
 					var file = path.join(root, 'foo.txt');
 					fs.createFile(file, function(err) {
 						should.not.exist(err);
-						gargoyle.monitor(file, options, function(err, context) {
+						gargoyle.monitor(file, options, function(err, monitor) {
 							should.not.exist(err);
-							watcher = context;
-							watcher.monitor.on('modify', function(filename) {
+							watcher = monitor;
+							watcher.on('modify', function(filename) {
 								filename.should.equal(file);
 								done();
 							});
@@ -398,10 +398,10 @@ describe('Monitoring', function() {
 					var file = path.join(root, 'foo.txt');
 					fs.createFile(file, function(err) {
 						should.not.exist(err);
-						gargoyle.monitor(file, options, function(err, context) {
+						gargoyle.monitor(file, options, function(err, monitor) {
 							should.not.exist(err);
-							watcher = context;
-							watcher.monitor.on('delete', function(filename) {
+							watcher = monitor;
+							watcher.on('delete', function(filename) {
 								filename.should.equal(file);
 								done();
 							});
@@ -425,9 +425,10 @@ describe('Monitoring', function() {
 						should.not.exist(err);
 						fs.symlink(source, target, function(err) {
 							should.not.exist(err);
-							gargoyle.monitor(target, options, function(err, context) {
+							gargoyle.monitor(target, options, function(err, monitor) {
 								should.not.exist(err);
-								context.monitor.on('modify', function(filename) {
+								watcher = monitor;
+								watcher.on('modify', function(filename) {
 									filename.should.equal(target);
 									done();
 								});
@@ -449,9 +450,10 @@ describe('Monitoring', function() {
 						should.not.exist(err);
 						fs.symlink(source, target, function(err) {
 							should.not.exist(err);
-							gargoyle.monitor(source, options, function(err, context) {
+							gargoyle.monitor(source, options, function(err, monitor) {
 								should.not.exist(err);
-								context.monitor.on('modify', function(filename) {
+								watcher = monitor;
+								watcher.on('modify', function(filename) {
 									filename.should.equal(source);
 									done();
 								});

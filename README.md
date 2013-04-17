@@ -31,27 +31,27 @@ Monitor a directory tree:
 
 ```javascript
 var gargoyle = require('gargoyle');
-gargoyle.monitor('/some/dir', function(err, context) {
+gargoyle.monitor('/some/dir', function(err, monitor) {
 	if (err) {
 		console.error(err);
 		return;
 	}
 
-	//context.files is a hash of filename -> FSWatcher
-	//context.monitor is an EventEmitter
+	//monitor is an EventEmitter with the following properties:
+	//  files is a hash of filename -> FSWatcher
 
-	context.monitor.on('modify', function(filename) {
+	monitor.on('modify', function(filename) {
 		console.log(filename + ' was modified');
 	});
-	context.monitor.on('delete', function(filename) {
+	monitor.on('delete', function(filename) {
 		console.log(filename + ' was deleted');
 	});
-	context.monitor.on('create', function(filename) {
+	monitor.on('create', function(filename) {
 		console.log(filename + ' was created');
 	});
 
 	//only when options.type === "watch"
-	context.monitor.on('rename', function(filename) {
+	monitor.on('rename', function(filename) {
 		console.log(filename + ' was renamed');
 	});
 });
@@ -59,11 +59,11 @@ gargoyle.monitor('/some/dir', function(err, context) {
 
 Stop monitoring:
 ```javascript
-context.stop(function() {
-	console.log('monitors stopped');
+monitor.stop(function() {
+	console.log('watchers stopped');
 });
 
-//context is now worthless
+//monitor is now worthless
 ```
 
 ### Options
@@ -96,7 +96,7 @@ var options = {
 		return false;
 	}
 };
-gargoyle.monitor('/some/dir', options, function(err, context) {
+gargoyle.monitor('/some/dir', options, function(err, monitor) {
 	//...
 });
 ```
@@ -113,7 +113,7 @@ var path = require('path');
 var options = {
 	type: 'watchFile' //default is 'watch'
 };
-gargoyle.monitor('/some/dir', options, function(err, context) {
+gargoyle.monitor('/some/dir', options, function(err, monitor) {
 	//...
 });
 ```
