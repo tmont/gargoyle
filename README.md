@@ -9,7 +9,7 @@ This uses [`fs.watch`](http://nodejs.org/api/fs.html#fs_fs_watch_filename_option
 so it probably doesn't work on OS X.
 
 ## Installation
-Via NPM (eventually): `npm install gargoyle`
+Via NPM: `npm install gargoyle`
 
 ## Usage
 There is one export: `gargoyle.monitor(path, callback)`. `path` should
