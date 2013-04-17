@@ -4,6 +4,8 @@ var should = require('should'),
 	vigilia = require('../'),
 	fs = require('fs-extra');
 
+
+
 describe('Monitoring', function() {
 	var watcher;
 
@@ -26,6 +28,16 @@ describe('Monitoring', function() {
 		}
 	});
 
+	function ensureNoEvents() {
+		var events = [].slice.call(arguments),
+			done = events.pop();
+		events.forEach(function(event) {
+			watcher.monitor.on(event, function() {
+				done('"' + event + '" should not have been emitted');
+			});
+		});
+	}
+
 	it('should detect change to file in root directory', function(done) {
 		var file = path.join(root, 'foo.txt');
 		fs.writeFile(file, 'foo', function(err) {
@@ -37,6 +49,7 @@ describe('Monitoring', function() {
 					filename.should.equal(file);
 					done();
 				});
+				ensureNoEvents('create', 'delete', 'rename', done);
 
 				fs.appendFile(file, 'bar', function(err) {
 					should.not.exist(err);
@@ -56,6 +69,7 @@ describe('Monitoring', function() {
 					filename.should.equal(file);
 					done();
 				});
+				ensureNoEvents('create', 'delete', 'rename', done);
 
 				fs.appendFile(file, 'bar', function(err) {
 					should.not.exist(err);
@@ -73,6 +87,7 @@ describe('Monitoring', function() {
 				filename.should.equal(file);
 				done();
 			});
+			ensureNoEvents('update', 'delete', 'rename', done);
 
 			fs.createFile(file, function(err) {
 				should.not.exist(err);
@@ -91,6 +106,7 @@ describe('Monitoring', function() {
 					filename.should.equal(file);
 					done();
 				});
+				ensureNoEvents('update', 'delete', 'rename', done);
 
 				fs.createFile(file, function(err) {
 					should.not.exist(err);
@@ -110,6 +126,7 @@ describe('Monitoring', function() {
 					filename.should.equal(file);
 					done();
 				});
+				ensureNoEvents('create', 'update', 'rename', done);
 
 				fs.unlink(file, function(err) {
 					should.not.exist(err);
@@ -129,6 +146,7 @@ describe('Monitoring', function() {
 					filename.should.equal(file);
 					done();
 				});
+				ensureNoEvents('create', 'update', 'rename', done);
 
 				fs.unlink(file, function(err) {
 					should.not.exist(err);
@@ -148,6 +166,7 @@ describe('Monitoring', function() {
 					filename.should.equal(file);
 					done();
 				});
+				ensureNoEvents('delete', 'update', done);
 
 				var newFile = path.join(path.dirname(file), 'bar.txt');
 				fs.rename(file, newFile, function(err) {
@@ -168,6 +187,7 @@ describe('Monitoring', function() {
 					filename.should.equal(file);
 					done();
 				});
+				ensureNoEvents('delete', 'update', done);
 
 				var newFile = path.join(path.dirname(file), 'bar.txt');
 				fs.rename(file, newFile, function(err) {
@@ -200,6 +220,7 @@ describe('Monitoring', function() {
 						done();
 					}
 				});
+				ensureNoEvents('delete', 'update', done);
 
 				fs.rename(file, newFile, function(err) {
 					should.not.exist(err);
@@ -221,6 +242,7 @@ describe('Monitoring', function() {
 						filename.should.equal(file);
 						done();
 					});
+					ensureNoEvents('create', 'delete', 'update', done);
 
 					fs.rename(file, newFile, function(err) {
 						should.not.exist(err);
@@ -240,6 +262,7 @@ describe('Monitoring', function() {
 						filename.should.equal(file);
 						done();
 					});
+					ensureNoEvents('create', 'delete', 'rename', done);
 
 					fs.appendFile(file, 'bar', function(err) {
 						should.not.exist(err);
@@ -259,6 +282,7 @@ describe('Monitoring', function() {
 						filename.should.equal(file);
 						done();
 					});
+					ensureNoEvents('create', 'rename', 'update', done);
 
 					fs.unlink(file, function(err) {
 						should.not.exist(err);
