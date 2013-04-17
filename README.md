@@ -12,7 +12,7 @@ so it probably doesn't work on OS X.
 Via NPM: `npm install gargoyle`
 
 ## Usage
-There is one export: `gargoyle.monitor(path, callback)`. `path` should
+There is one export: `gargoyle.monitor(path[, options, callback])`. `path` should
 be a filename (file or directory). IF it's a directory, it'll be traversed
 recursively.
 
@@ -87,7 +87,7 @@ gargoyle.stop(context, function() {
 });
 
 //or, equivalently
-context.monitor.stop(function() {
+context.stop(function() {
 	console.log('monitors stopped');
 });
 
