@@ -41,7 +41,7 @@ describe('Monitoring', function() {
 	describe('on a directory', function() {
 		it('should detect change to file in root directory', function(done) {
 			var file = path.join(root, 'foo.txt');
-			fs.writeFile(file, 'foo', function(err) {
+			fs.createFile(file, function(err) {
 				should.not.exist(err);
 				vigilia.monitor(root, function(err, context) {
 					should.not.exist(err);
@@ -247,6 +247,29 @@ describe('Monitoring', function() {
 
 					fs.rename(file, newFile, function(err) {
 						should.not.exist(err);
+					});
+				});
+			});
+		});
+
+		it('should stop watching', function(done) {
+			var file = path.join(root, 'foo.txt');
+			fs.createFile(file, function(err) {
+				should.not.exist(err);
+				vigilia.monitor(root, function(err, context) {
+					should.not.exist(err);
+					watcher = context;
+
+					fs.createFile(path.join(root, 'bar.txt'), function(err) {
+						should.not.exist(err);
+						//create will be triggered, hence its absence here
+						ensureNoEvents('update', 'delete', 'rename', done);
+						context.stop(function() {
+							fs.appendFile(file, 'bar', function(err) {
+								should.not.exist(err);
+								done();
+							});
+						});
 					});
 				});
 			});
