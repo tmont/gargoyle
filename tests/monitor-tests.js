@@ -432,6 +432,7 @@ describe('Monitoring', function() {
 									filename.should.equal(target);
 									done();
 								});
+								ensureNoEvents('create', 'delete', 'rename', done);
 
 								doIo(function() {
 									fs.appendFile(source, 'foo', function(err) {
@@ -457,6 +458,7 @@ describe('Monitoring', function() {
 									filename.should.equal(source);
 									done();
 								});
+								ensureNoEvents('create', 'delete', 'rename', done);
 
 								doIo(function() {
 									fs.appendFile(target, 'foo', function(err) {
