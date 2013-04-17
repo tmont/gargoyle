@@ -95,7 +95,7 @@ exports.monitor = function(dir, options, callback) {
 	}
 
 	var context = {
-		options: options,
+		options: options || {},
 		monitor: new EventEmitter(),
 		files: {},
 		stop: function(callback) {
