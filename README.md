@@ -44,15 +44,40 @@ gargoyle.monitor('/some/dir', function(err, context) {
 		console.log(filename + ' was modified');
 	});
 	context.monitor.on('delete', function(filename) {
-        console.log(filename + ' was deleted');
-    });
-    context.monitor.on('create', function(filename) {
-        console.log(filename + ' was created');
-    });
-    context.monitor.on('rename', function(filename) {
-        console.log(filename + ' was renamed');
-    });
+		console.log(filename + ' was deleted');
+	});
+	context.monitor.on('create', function(filename) {
+		console.log(filename + ' was created');
+	});
+	context.monitor.on('rename', function(filename) {
+		console.log(filename + ' was renamed');
+	});
 });
+```
+
+Exclude certain files:
+
+```javascript
+var path = require('path');
+var options = {
+	exclude: function(filename) {
+		//note: filename is absolute
+		var basename = path.basename(filename);
+
+		//ignore dotfiles
+		if (basename.charAt(0) === '.') {
+			return true;
+		}
+
+		//javascript/coffeescript files are okay
+		if (!/\.(js|coffee)$/.test(basename)) {
+			return true;
+		}
+
+		return false;
+	}
+};
+gargoyle.monitor('/some/dir',
 ```
 
 Stop monitoring:
