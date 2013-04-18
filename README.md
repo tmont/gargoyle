@@ -1,6 +1,7 @@
 # Gargoyle
 
 [![Build Status](https://travis-ci.org/tmont/gargoyle.png)](https://travis-ci.org/tmont/gargoyle)
+[![NPM version](https://badge.fury.io/js/gargoyle.png)](http://badge.fury.io/js/gargoyle)
 
 Monitor a directory for changes. You can detect file changes, creations,
 deletions and renames. You know it works because it actually has tests!
