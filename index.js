@@ -81,16 +81,23 @@ function watchFileDir(filePath, monitor) {
 			//subdirectories
 			var oldFiles = Object.keys(monitor.files);
 			watch(filePath, monitor, 0, 1, function(err) {
-				var newFile = null;
-				if (!err) {
-					//compute difference between the old watched files and the
-					//newly watched files
-					newFile = Object.keys(monitor.files).filter(function(file) {
-						return oldFiles.indexOf(file) === -1;
-					})[0];
+				if (err) {
+					return;
 				}
 
-				monitor.emit('create', newFile);
+				//compute difference between the old watched files and the
+				//newly watched files
+				var newFile = Object.keys(monitor.files).filter(function(file) {
+					return oldFiles.indexOf(file) === -1;
+				})[0];
+
+				//only emit the creation event if we are actually watching the
+				//new file. this will make sure we don't send spurious creation
+				//events for temporary backup files and the like that get deleted
+				//almost immediately
+				if (newFile) {
+					monitor.emit('create', newFile);
+				}
 			});
 		}
 	});
