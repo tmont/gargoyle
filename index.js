@@ -76,10 +76,21 @@ function watchFileDir(filePath, monitor) {
 		var cTime = current.ctime.getTime(),
 			pTime = prev.ctime.getTime();
 		if (cTime > pTime) {
-			//the only way to make sure the new file gets watched
-			watch(filePath, monitor, 0,  1, function(err) {
-				//ignore error, the new file just won't be watched
-				monitor.emit('create', filePath);
+			//the only way to make sure the new file gets watched:
+			//just watch the entire directory, but don't traverse into
+			//subdirectories
+			var oldFiles = Object.keys(monitor.files);
+			watch(filePath, monitor, 0, 1, function(err) {
+				var newFile = null;
+				if (!err) {
+					//compute difference between the old watched files and the
+					//newly watched files
+					newFile = Object.keys(monitor.files).filter(function(file) {
+						return oldFiles.indexOf(file) === -1;
+					})[0];
+				}
+
+				monitor.emit('create', newFile);
 			});
 		}
 	});

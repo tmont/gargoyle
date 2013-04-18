@@ -100,11 +100,7 @@ describe('Monitoring', function() {
 						should.not.exist(err);
 						watcher = monitor;
 						watcher.on('create', function(filename) {
-							if (type === 'watchFile') {
-								filename.should.equal(path.dirname(file));
-							} else {
-								filename.should.equal(file);
-							}
+							filename.should.equal(file);
 							done();
 						});
 						ensureNoEvents('modify', 'delete', 'rename', done);
@@ -125,11 +121,7 @@ describe('Monitoring', function() {
 							should.not.exist(err);
 							watcher = monitor;
 							watcher.on('create', function(filename) {
-								if (type === 'watchFile') {
-									filename.should.equal(path.dirname(file));
-								} else {
-									filename.should.equal(file);
-								}
+								filename.should.equal(file);
 								done();
 							});
 							ensureNoEvents('modify', 'delete', 'rename', done);
@@ -149,11 +141,7 @@ describe('Monitoring', function() {
 						should.not.exist(err);
 						watcher = monitor;
 						watcher.on('create', function(filename) {
-							if (type === 'watchFile') {
-								filename.should.equal(path.dirname(file));
-							} else {
-								filename.should.equal(file);
-							}
+							filename.should.equal(file);
 							doIo(function() {
 								fs.appendFile(file, 'asdf', function(err) {
 									should.not.exist(err);
