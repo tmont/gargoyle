@@ -5,9 +5,6 @@
 Monitor a directory for changes. You can detect file changes, creations,
 deletions and renames. You know it works because it actually has tests!
 
-This uses [`fs.watch`](http://nodejs.org/api/fs.html#fs_fs_watch_filename_options_listener)
-so it probably doesn't work on OS X.
-
 ## Installation
 Via NPM: `npm install gargoyle`
 
