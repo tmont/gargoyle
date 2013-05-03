@@ -9,6 +9,7 @@
 		"type": "git",
 		"url": "https://github.com/tmont/gargoyle.git"
 	},
+	"files": [ "index.js" ],
 
 	"dependencies": {
 		"async": "0.2.7"
