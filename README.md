@@ -107,9 +107,23 @@ to use `fs.watchFile`. `fs.watch` is far more efficient, and much faster,
 but doesn't work all the time.
 
 ```javascript
-var path = require('path');
 var options = {
 	type: 'watchFile' //default is 'watch'
+};
+gargoyle.monitor('/some/dir', options, function(err, monitor) {
+	//...
+});
+```
+
+#### Poll interval
+If you use the `watchFile` type, you can define the poll interval for `stat`ing
+the filesystem (this is part of the `watchFile` Node API). The default is `507`,
+which is 10x as fast as the Node default.
+
+```javascript
+var options = {
+	type: 'watchFile',
+	interval: 50 //poll 20 times a second
 };
 gargoyle.monitor('/some/dir', options, function(err, monitor) {
 	//...
