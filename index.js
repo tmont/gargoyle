@@ -1,11 +1,14 @@
 var fs = require('fs'),
 	async = require('async'),
 	path = require('path'),
-	EventEmitter = require('events').EventEmitter,
-	watchFileOptions = {
+	EventEmitter = require('events').EventEmitter;
+
+function getWatchFileOptions(monitor) {
+	return {
 		persistent: true,
-		interval: 50
+		interval: monitor.options.interval
 	};
+}
 
 function getRealEvent(event, filePath, monitor, callback) {
 	fs.exists(filePath, function(exists) {
@@ -55,7 +58,7 @@ function watchDir(filePath, monitor) {
 }
 
 function watchFileFile(filePath, monitor) {
-	fs.watchFile(filePath, watchFileOptions, function(current, prev) {
+	fs.watchFile(filePath, getWatchFileOptions(monitor), function(current, prev) {
 		var cTime = current.mtime.getTime(),
 			pTime = prev.mtime.getTime();
 		if (cTime > pTime) {
@@ -72,7 +75,7 @@ function watchFileFile(filePath, monitor) {
 }
 
 function watchFileDir(filePath, monitor) {
-	fs.watchFile(filePath, watchFileOptions, function(current, prev) {
+	fs.watchFile(filePath, getWatchFileOptions(monitor), function(current, prev) {
 		var cTime = current.ctime.getTime(),
 			pTime = prev.ctime.getTime();
 		if (cTime > pTime) {
@@ -171,6 +174,7 @@ exports.monitor = function(filename, options, callback) {
 
 	options.type = options.type || 'watch';
 	options.maxDepth = options.maxDepth || Infinity;
+	options.interval = options.interval || 507;
 
 	var monitor = new EventEmitter();
 	monitor.options = options;
