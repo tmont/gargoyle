@@ -1,6 +1,6 @@
 {
 	"name": "gargoyle",
-	"version": "0.3.4",
+	"version": "0.3.5",
 	"description": "Watches a directory for file changes. You know. Like a gargoyle.",
 	"keywords": [ "watch", "watcher" ],
 
