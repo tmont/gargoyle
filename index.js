@@ -179,16 +179,16 @@ exports.monitor = function(filename, options, callback) {
 	var monitor = new EventEmitter();
 	monitor.options = options;
 	monitor.files = {};
-	monitor.stop = function(callback) {
-		async.forEachLimit(Object.keys(monitor.files), 30, function(filename, next) {
+	monitor.stop = function() {
+		Object.keys(monitor.files).forEach(function(filename) {
 			if (monitor.options.type === 'watch') {
 				monitor.files[filename].close();
 			} else {
 				fs.unwatchFile(filename);
 			}
-			delete monitor.files[filename];
-			process.nextTick(next);
-		}, callback);
+		});
+
+		monitor.files = {};
 	};
 
 	watch(filename, monitor, 0, options.maxDepth, function(err) {

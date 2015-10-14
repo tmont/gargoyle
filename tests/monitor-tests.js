@@ -14,17 +14,10 @@ describe('Monitoring', function() {
 	});
 
 	afterEach(function(done) {
-		function deleteFiles(originalError) {
-			fs.remove(root, function(err) {
-				done(originalError || err);
-			});
-		}
-
-		if (watcher) {
-			watcher.stop(deleteFiles);
-		} else {
-			deleteFiles();
-		}
+		watcher && watcher.stop();
+		fs.remove(root, function(err) {
+			done(err);
+		});
 	});
 
 	function ensureNoEvents() {
@@ -289,11 +282,10 @@ describe('Monitoring', function() {
 								should.not.exist(err);
 								//create will be triggered, hence its absence here
 								ensureNoEvents('modify', 'delete', 'rename', done);
-								watcher.stop(function() {
-									fs.appendFile(file, 'bar', function(err) {
-										should.not.exist(err);
-										done();
-									});
+								watcher.stop();
+								fs.appendFile(file, 'bar', function(err) {
+									should.not.exist(err);
+									done();
 								});
 							});
 						});
