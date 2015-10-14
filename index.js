@@ -11,7 +11,9 @@ function getWatchFileOptions(monitor) {
 }
 
 function getRealEvent(event, filePath, monitor, callback) {
-	fs.exists(filePath, function(exists) {
+	fs.access(filePath, fs.F_OK, function(err) {
+		var exists = !err;
+
 		var eventName;
 		//when a file is unlink()'d, watch() sends a change event
 		//and two renames, so we need to make sure we aren't
